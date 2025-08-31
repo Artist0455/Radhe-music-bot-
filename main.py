@@ -1601,5 +1601,34 @@ if __name__ == "__main__":
     logger.info("Bot stopped.")
     logger.info("✅ All services are up and running. Bot started successfully.")
 
+from pyrogram import Client
+from pyrogram.errors import RPCError
 
+user_clones = {}
+
+@app.on_message(filters.command("clone") & filters.private)
+async def clone_handler(client, message):
+    try:
+        await message.reply("Send me your Bot Token:")
+        
+        # wait for user reply
+        response = await client.listen(message.chat.id, timeout=60)
+        token = response.text.strip()
+        
+        # test token
+        clone = Client(
+            name=f"clone_{message.from_user.id}",
+            api_id=API_ID,
+            api_hash=API_HASH,
+            bot_token=token
+        )
+        await clone.start()
+        user_clones[message.from_user.id] = clone
+        await message.reply("✅ Your bot has been cloned successfully and is now online!")
+        
+    except RPCError:
+        await message.reply("❌ Invalid bot token, please try again.")
+    except Exception as e:
+        await message.reply(f"Error: {str(e)}")
+        
 
