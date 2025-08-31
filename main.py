@@ -1643,9 +1643,9 @@ def register_all_handlers(bot_app, call):
         await m.reply("⏹️ Clone bot stopped music!")
     @app.on_message(filters.command("clone") & filters.private)
     async def clone_handler(client, message):
-    user_id = message.from_user.id
-    await message.reply("🤖 Send me your Bot Token (from @BotFather):")
-    # aage ka code...
+        user_id = message.from_user.id
+        await message.reply("🤖 Send me your Bot Token (from @BotFather):")
+        # aage ka code...
 
 
     try:
