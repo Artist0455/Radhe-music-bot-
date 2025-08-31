@@ -1648,12 +1648,12 @@ def register_all_handlers(bot_app, call):
         # aage ka code...
 
 
+    # wait for user reply (next message)
     try:
-        # wait for token from user
-        response = await client.listen(message.chat.id, timeout=60)
+        response = await client.listen_message(chat_id=message.chat.id, timeout=60)  # ✅ listen_message use karo
         token = response.text.strip()
 
-        # create new client
+        # create new clone client
         clone = Client(
             name=f"clone_{user_id}",
             api_id=API_ID,
@@ -1668,16 +1668,14 @@ def register_all_handlers(bot_app, call):
         call = PyTgCalls(clone)
         await call.start()
 
-        # save in dict
+        # save clone
         user_clones[user_id] = {"client": clone, "call": call}
 
-        # register ALL music handlers
+        # register handlers
         register_all_handlers(clone, call)
 
         await message.reply("✅ Your bot has been cloned successfully! Now your clone bot works same as mine.")
 
-    except RPCError:
-        await message.reply("❌ Invalid bot token, please try again.")
     except asyncio.TimeoutError:
         await message.reply("⌛ Timeout! You didn’t send token in time.")
     except Exception as e:
