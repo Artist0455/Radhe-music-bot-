@@ -1671,8 +1671,3 @@ def register_all_handlers(bot_app, call):
 
         await message.reply("✅ Your bot has been cloned successfully! Now your clone bot works same as mine.")
 
-    except asyncio.TimeoutError:
-        await message.reply("⌛ Timeout! You didn’t send token in time.")
-    except Exception as e:
-        await message.reply(f"⚠️ Error: {str(e)}")
-        
