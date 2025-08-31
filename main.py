@@ -1648,11 +1648,6 @@ def register_all_handlers(bot_app, call):
         # aage ka code...
 
 
-    # wait for user reply (next message)
-    try:
-        response = await client.listen_message(chat_id=message.chat.id, timeout=60)  # ✅ listen_message use karo
-        token = response.text.strip()
-
         # create new clone client
         clone = Client(
             name=f"clone_{user_id}",
