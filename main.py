@@ -1601,34 +1601,65 @@ if __name__ == "__main__":
     logger.info("Bot stopped.")
     logger.info("✅ All services are up and running. Bot started successfully.")
 
-from pyrogram import Client
+from pyrogram import Client, filters
+from pytgcalls import PyTgCalls
 from pyrogram.errors import RPCError
+import asyncio
 
+# Dictionary to store clones
 user_clones = {}
 
+# Helper: register music handlers for clone
+def register_clone_handlers(bot_app, call):
+    @bot_app.on_message(filters.command("play"))
+    async def play_handler(c, m):
+        # yaha apna asli play code daalo
+        await m.reply("🎶 Playing from your clone bot!")
+
+    @bot_app.on_message(filters.command("stop"))
+    async def stop_handler(c, m):
+        # yaha apna asli stop code daalo
+        await m.reply("⏹️ Stopped from your clone bot!")
+
+
+# /clone command
 @app.on_message(filters.command("clone") & filters.private)
 async def clone_handler(client, message):
+    user_id = message.from_user.id
+    await message.reply("🤖 Send me your Bot Token (from @BotFather):")
+
     try:
-        await message.reply("Send me your Bot Token:")
-        
-        # wait for user reply
+        # wait for token
         response = await client.listen(message.chat.id, timeout=60)
         token = response.text.strip()
-        
-        # test token
+
+        # create new clone client
         clone = Client(
-            name=f"clone_{message.from_user.id}",
+            name=f"clone_{user_id}",
             api_id=API_ID,
             api_hash=API_HASH,
-            bot_token=token
+            bot_token=token,
+            workers=4,
+            in_memory=True
         )
         await clone.start()
-        user_clones[message.from_user.id] = clone
-        await message.reply("✅ Your bot has been cloned successfully and is now online!")
-        
+
+        # attach PyTgCalls to clone
+        call = PyTgCalls(clone)
+        await call.start()
+
+        # save clone
+        user_clones[user_id] = {"client": clone, "call": call}
+
+        # register handlers
+        register_clone_handlers(clone, call)
+
+        await message.reply("✅ Your bot has been cloned successfully! Use /play and /stop in your clone bot.")
+
     except RPCError:
         await message.reply("❌ Invalid bot token, please try again.")
+    except asyncio.TimeoutError:
+        await message.reply("⌛ Timeout! You didn’t send token in time.")
     except Exception as e:
-        await message.reply(f"Error: {str(e)}")
+        await message.reply(f"⚠️ Error: {str(e)}")
         
-
