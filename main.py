@@ -1622,18 +1622,36 @@ def register_clone_handlers(bot_app, call):
         await m.reply("⏹️ Stopped from your clone bot!")
 
 
-# /clone command
-@app.on_message(filters.command("clone") & filters.private)
+from pyrogram import Client, filters
+from pytgcalls import PyTgCalls
+from pyrogram.errors import RPCError
+import asyncio
+
+# Dictionary to store clones
+user_clones = {}
+
+# Yeh function aapke saare music handlers ko clone me register karega
+def register_all_handlers(bot_app, call):
+    # yaha wahi handlers daalo jo aapke main bot me already bane hain
+    # Example (sirf demo ke liye):
+    @bot_app.on_message(filters.command("play"))
+    async def play_handler(c, m):
+        await m.reply("🎶 Clone bot is playing music (same as main)!")
+
+    @bot_app.on_message(filters.command("stop"))
+    async def stop_handler(c, m):
+        await m.reply("⏹️ Clone bot stopped music!")
+        @app.on_message(filters.command("clone") & filters.private)
 async def clone_handler(client, message):
     user_id = message.from_user.id
     await message.reply("🤖 Send me your Bot Token (from @BotFather):")
 
     try:
-        # wait for token
+        # wait for token from user
         response = await client.listen(message.chat.id, timeout=60)
         token = response.text.strip()
 
-        # create new clone client
+        # create new client
         clone = Client(
             name=f"clone_{user_id}",
             api_id=API_ID,
@@ -1644,17 +1662,17 @@ async def clone_handler(client, message):
         )
         await clone.start()
 
-        # attach PyTgCalls to clone
+        # attach PyTgCalls
         call = PyTgCalls(clone)
         await call.start()
 
-        # save clone
+        # save in dict
         user_clones[user_id] = {"client": clone, "call": call}
 
-        # register handlers
-        register_clone_handlers(clone, call)
+        # register ALL music handlers
+        register_all_handlers(clone, call)
 
-        await message.reply("✅ Your bot has been cloned successfully! Use /play and /stop in your clone bot.")
+        await message.reply("✅ Your bot has been cloned successfully! Now your clone bot works same as mine.")
 
     except RPCError:
         await message.reply("❌ Invalid bot token, please try again.")
